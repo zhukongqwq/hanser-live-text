@@ -32,10 +32,10 @@ jobs:
           path: list.json
           if-no-files-found: error
 
-      - name: 发布到 Release（latest 标签）
+      - name: 发布到 Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: latest
+          tag_name: ${{ github.sha }}
           name: "SHA256 校验列表 - ${{ github.sha }}"
           body: "由 commit ${{ github.sha }} 生成，包含所有文件的 SHA256 值"
           files: list.json
