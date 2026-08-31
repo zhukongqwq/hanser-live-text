@@ -1,0 +1,45 @@
+name: Generate SHA256 JSON
+
+on:
+  push:
+    branches:
+      - main
+      - master   # 根据您的默认分支调整
+
+permissions:
+  contents: write   # 允许创建 Release 和上传附件
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'   # 可用 '3.11' 等指定版本
+
+      - name: 执行 SHA256 计算脚本
+        run: python sha256.py
+
+      - name: 上传 list.json 作为 Artifact（备用下载方式）
+        uses: actions/upload-artifact@v4
+        with:
+          name: sha256-list
+          path: list.json
+          if-no-files-found: error
+
+      - name: 发布到 Release（latest 标签）
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: "最新 SHA256 校验列表"
+          body: "每次 push 自动更新，包含所有文件的 SHA256 值"
+          files: list.json
+          prerelease: false
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
