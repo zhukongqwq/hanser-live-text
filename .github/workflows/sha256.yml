@@ -31,13 +31,17 @@ jobs:
           name: sha256-list
           path: list.json
           if-no-files-found: error
+      
+       - name: 生成时间戳标签
+        id: timestamp
+        run: echo "TAG=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
 
       - name: 发布到 Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.sha }}
-          name: "SHA256 校验列表 - ${{ github.sha }}"
-          body: "由 commit ${{ github.sha }} 生成，包含所有文件的 SHA256 值"
+          tag_name: ${{ steps.timestamp.outputs.TAG }}
+          name: "SHA256 校验列表 - ${{ steps.timestamp.outputs.TAG }}"
+          body: "由 ${{ steps.timestamp.outputs.TAG }} 生成，包含所有文件的 SHA256 值"
           files: list.json
           prerelease: false
           draft: false
