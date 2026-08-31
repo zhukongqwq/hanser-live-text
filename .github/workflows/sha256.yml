@@ -36,8 +36,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
-          name: "最新 SHA256 校验列表"
-          body: "每次 push 自动更新，包含所有文件的 SHA256 值"
+          name: "SHA256 校验列表 - ${{ github.sha }}"
+          body: "由 commit ${{ github.sha }} 生成，包含所有文件的 SHA256 值"
           files: list.json
           prerelease: false
           draft: false
