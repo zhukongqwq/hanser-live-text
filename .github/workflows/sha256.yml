@@ -32,7 +32,7 @@ jobs:
           path: list.json
           if-no-files-found: error
       
-       - name: 生成时间戳标签
+      - name: 生成时间戳标签
         id: timestamp
         run: echo "TAG=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
 
