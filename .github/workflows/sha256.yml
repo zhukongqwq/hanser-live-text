@@ -1,13 +1,13 @@
-name: Generate SHA256 JSON
+name: Generate SHA256 JSON and Create Release
 
 on:
   push:
     branches:
       - main
-      - master   # 根据您的默认分支调整
+      - master
 
 permissions:
-  contents: write   # 允许创建 Release 和上传附件
+  contents: write
 
 jobs:
   build:
@@ -20,30 +20,42 @@ jobs:
       - name: 设置 Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'   # 可用 '3.11' 等指定版本
+          python-version: '3.x'
 
       - name: 执行 SHA256 计算脚本
         run: python sha256.py
 
-      - name: 上传 list.json 作为 Artifact（备用下载方式）
+      - name: 上传 list.json 作为 Artifact（备用）
         uses: actions/upload-artifact@v4
         with:
           name: sha256-list
           path: list.json
           if-no-files-found: error
-      
+
+      # === 1. 创建带时间戳的 Release（用于归档） ===
       - name: 生成时间戳标签
         id: timestamp
         run: echo "TAG=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
 
-      - name: 发布到 Release
+      - name: 创建带时间戳的 Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.timestamp.outputs.TAG }}
           name: "SHA256 校验列表 - ${{ steps.timestamp.outputs.TAG }}"
-          body: "由 ${{ steps.timestamp.outputs.TAG }} 生成，包含所有文件的 SHA256 值"
+          body: "自动生成于 ${{ steps.timestamp.outputs.TAG }}"
           files: list.json
-          prerelease: false
-          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # === 2. 更新 'latest' Release（用于固定链接） ===
+      - name: 更新 latest Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: "最新 SHA256 校验列表"
+          body: "每次 push 自动更新，包含所有文件的 SHA256 值"
+          files: list.json
+          # 关键参数：允许覆盖已存在的同名 Release
+          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
